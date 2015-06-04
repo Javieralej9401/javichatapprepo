@@ -337,25 +337,25 @@ function ReconectarUsuario(socket,mac){
 function IntentoReconeccion(socket, fn){
 
     IP= socket.conn.remoteAddress;
-    if(IP!=null){
+    if(IP){
 
-      if( IP.indexOf("::ffff:")> -1){
-          IP=IP.replace("::ffff:","");
-      }
-    }
-    getMac(IP, function(mac){
-
-        if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ]   ){
-
-            if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ].reconTimer ){
-
-                 fn(true,mac);
-                 return;
-            }
-        }
-        fn(false,mac);
+          if( IP.indexOf("::ffff:")> -1){
+              IP=IP.replace("::ffff:","");
+          }
         
-       
-   });
+          getMac(IP, function(mac){
 
+              if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ]   ){
+
+                  if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ].reconTimer ){
+
+                       fn(true,mac);
+                       return;
+                  }
+              }
+              fn(false,mac);
+              
+             
+         });
+    }
 }
