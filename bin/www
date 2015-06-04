@@ -379,8 +379,8 @@ function IntentoReconeccion(socket, fn){
 
 }
 
-//chatServer.setListeners(chatListeners);
+chatServer.setListeners(chatListeners);
 
-//chatServer.iniciar();
+chatServer.iniciar();
 
 
