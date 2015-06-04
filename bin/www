@@ -342,7 +342,7 @@ function IntentoReconeccion(socket, fn){
           if( IP.indexOf("::ffff:")> -1){
               IP=IP.replace("::ffff:","");
           }
-        
+          console.log("La ip es "+ IP);
           getMac(IP, function(mac){
 
               if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ]   ){
@@ -357,5 +357,7 @@ function IntentoReconeccion(socket, fn){
               
              
          });
+    }else{
+        console.log("No puede obtener la IP")
     }
 }
