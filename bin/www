@@ -213,7 +213,7 @@ function ChatServidorSocketIO(servidorPrincipal, chatapp){
 
 chatapp= new ChatApp();
 
-var chatServer= new ChatServidorSocketIO(server, chatapp);
+//var chatServer= new ChatServidorSocketIO(server, chatapp);
 
 var chatListeners= function(chatapp,socket){
      console.log("Nuevo socket conectado");
@@ -359,8 +359,11 @@ function ReconectarUsuario(socket,mac){
 function IntentoReconeccion(socket, fn){
 
     IP= socket.conn.remoteAddress;
-    if( IP.indexOf("::ffff:")> -1){
-        IP=IP.replace("::ffff:","");
+    if(IP!=null){
+
+      if( IP.indexOf("::ffff:")> -1){
+          IP=IP.replace("::ffff:","");
+      }
     }
     getMac(IP, function(mac){
 
@@ -383,4 +386,11 @@ function IntentoReconeccion(socket, fn){
 
 //chatServer.iniciar();
 
+var a = require("socket.io")(server);
+
+a.on("connection", function(socket){
+
+    console.log("Haala madrid");
+
+});
 
