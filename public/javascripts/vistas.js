@@ -86,8 +86,6 @@ var UsuariosConectadosVista= Backbone.View.extend({
        inputMsjW.removeClass("hiddenc");
        inputMsjW.show();
        
-    }else{
-      alert("bruto")
     }
   
  		$(this.el).find(".direct-chat")
