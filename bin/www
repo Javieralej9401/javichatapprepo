@@ -358,6 +358,6 @@ function IntentoReconeccion(socket, fn){
              
          });
     }else{
-        console.log("No puede obtener la IP")
+        console.log("No puede obtener la IP");
     }
 }
