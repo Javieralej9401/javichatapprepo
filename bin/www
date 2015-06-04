@@ -210,9 +210,9 @@ function ChatServidorSocketIO(servidorPrincipal, chatapp){
 
 
 
-chatapp= new ChatApp();
+//chatapp= new ChatApp();
 
-var chatServer= new ChatServidorSocketIO(server, chatapp);
+//var chatServer= new ChatServidorSocketIO(server, chatapp);
 
 var chatListeners= function(chatapp,socket){
      console.log("Nuevo socket conectado");
@@ -378,8 +378,8 @@ function IntentoReconeccion(socket, fn){
 
 }
 
-chatServer.setListeners(chatListeners);
+//chatServer.setListeners(chatListeners);
 
-chatServer.iniciar();
+//chatServer.iniciar();
 
 
