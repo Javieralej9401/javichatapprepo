@@ -34,15 +34,15 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
 
-		var ip= getIpByRequest(req);
+		//var ip= getIpByRequest(req);
 
-		getMac(ip, function(mac){
+		//getMac(ip, function(mac){
 
 	  		var datosUsuario= {
 	  			"nickname": req.body.nickname,
                 "socket": null, 
-                "ip":  ip,
-                "mac": mac,
+                "ip":  "",
+                "mac": "",
                 "fotoUrl": null, 
             }    
 			var disponible= chatapp.verificarUsuarioDisponible(datosUsuario);
@@ -72,7 +72,7 @@ router.post('/', function(req, res, next) {
 			
 
 
-		});
+		//});
 
 
 	// var disponible= usuariosConectados[ req.body.nickname ] == null;

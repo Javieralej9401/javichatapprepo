@@ -257,17 +257,23 @@ io.on("connection", function(socket) {
          if(! chatapp.usuariosConectados[socket.nickname] ){
             return;
          }
+
+          console.log(socket.nickname +" se ha desconectado");
+          chatapp.eliminarUsuario(socket.nickname);
+          socket.broadcast.emit("UsuarioLeft", socket.nickname );
+
+
          //Inicio Intento de reconeccion
         
-          chatapp.usuariosConectados[socket.nickname].reconTimer =  
-          setTimeout( 
-            function(){
+          // chatapp.usuariosConectados[socket.nickname].reconTimer =  
+          // setTimeout( 
+          //   function(){
 
-                console.log(socket.nickname +" se ha desconectado");
-                chatapp.eliminarUsuario(socket.nickname);
-                socket.broadcast.emit("UsuarioLeft", socket.nickname );
-            }
-          ,100000);
+          //       console.log(socket.nickname +" se ha desconectado");
+          //       chatapp.eliminarUsuario(socket.nickname);
+          //       socket.broadcast.emit("UsuarioLeft", socket.nickname );
+          //   }
+          // ,100000);
               
     })
   
@@ -293,20 +299,14 @@ io.on("connection", function(socket) {
         }
 
     })
-    var IP= socket.conn.remoteAddress ;
-    if(IP){
-      console.log("Esta es la ip " + IP);
-    }else{
-      console.log("Error en la  ip");
-      
-    }
-    IntentoReconeccion(socket, function(resultado,mac){
-        if(resultado){
 
-             console.log("Reconectando!!!!!!!");
-              ReconectarUsuario(socket,mac);
-        }
-    })  
+    // IntentoReconeccion(socket, function(resultado,mac){
+    //     if(resultado){
+
+    //          console.log("Reconectando!!!!!!!");
+    //           ReconectarUsuario(socket,mac);
+    //     }
+    // })  
 });
 
 function enviarMensajePrivado(infoMsj){
