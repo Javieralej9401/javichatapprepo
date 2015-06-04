@@ -192,7 +192,8 @@ function ChatApp(){
 
 function ChatServidorSocketIO(servidorPrincipal, chatapp){
     var self= this;
-    self.servidor= require("socket.io")(servidorPrincipal);
+
+    //self.servidor= require("socket.io")(servidorPrincipal);
     self.socketListeners;
     self.chatapp= chatapp;
 
