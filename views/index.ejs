@@ -81,13 +81,17 @@ $(document).ready(function(){
 	  chatapp.socket.on("UsuarioJoined", function(usuario){
 
 	  		chatapp.usuariosConectados.add( new Usuario( {nickname: usuario.nickname} ) );
+	  		var msj=  usuario.nickname + " ha entrado!"
+	  		notificar(msj);
 	  });
 	  chatapp.socket.on("UsuarioLeft", function(nickname){
-	  		
+	  
         var u = chatapp.usuariosConectados.find(function(item) { return item.get('nickname') == nickname });
         if (u) {
             chatapp.usuariosConectados.remove(u);
         }
+        var msj= nickname + " ha salido!"
+	  	notificar(msj);
 
 	  })
 	  chatapp.socket.on("NuevoMensajeDe", function(data){
@@ -100,6 +104,9 @@ $(document).ready(function(){
 
 	  	 		$(".direct-chat-messages").renderTemplate($('#mensajeSecond'), { nick: data.nickname, msj: data.mensaje }, 1);
 	  		}else{
+	  			var msj= data.nickname + " te ha enviado un mensaje!"
+	  			notificar(msj);
+	  			
 
 	  			 $(".users-list").find("[ nick-item-list = '"+data.nickname+"']").addClass("nuevoMsjAlerta");
 	  			
@@ -118,6 +125,14 @@ $(document).ready(function(){
 	 
 	
 })
+function notificar(msj){
+
+	$(".notificaciones").renderTemplate($('#notiAlert'), { msj: msj }, 1);
+	setTimeout(function(){
+			$(".notificaciones").empty();
+	},4000);
+
+}
 function debug(data){
 	console.log("*************************")
 	console.log(data);
@@ -212,7 +227,24 @@ function GuardarMsjEnSesion(data){
 	    
 	     
 </script>  
+<script id="notiAlert" type="text/x-handlebars-template">  
 
+  <div style="position:relative; width: 100%; margin-bottom:10px" class="info-box bg-default pull-right">
+                <span class="info-box-icon"><i class="ion-ios-chatbubble-outline"></i></span>
+                <button class="pull-right btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                <div class="info-box-content">
+
+                		
+
+                  		<div style="padding:30px; font-size:14px">
+                  			{{msj}}
+                  		</div>
+                  			
+                
+               
+                </div>
+        </div>
+</script>  
 <script id="mensajeSecond" type="text/x-handlebars-template">  
   
     <div class="direct-chat-msg">
@@ -337,7 +369,10 @@ function GuardarMsjEnSesion(data){
 
 	</div>
 </div>
+	<div class="notificaciones" style="position:fixed; bottom: 4px; width: 400px; right: 28px;">
+			
 
+	</div>
 
      <script type="text/javascript" src=  'stylesheets/Admin/bootstrap/js/bootstrap.min.js'></script>
 
