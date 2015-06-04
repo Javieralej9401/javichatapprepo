@@ -293,6 +293,13 @@ io.on("connection", function(socket) {
         }
 
     })
+    var IP= socket.conn.remoteAddress ;
+    if(IP){
+      console.log("Esta es la ip " + IP);
+    }else{
+      console.log("Error en la  ip");
+      
+    }
     IntentoReconeccion(socket, function(resultado,mac){
         if(resultado){
 
@@ -336,7 +343,7 @@ function ReconectarUsuario(socket,mac){
 
 function IntentoReconeccion(socket, fn){
 
-    IP= socket.conn.remoteAddress;
+    var IP= socket.conn.remoteAddress ;
     if(IP){
 
           if( IP.indexOf("::ffff:")> -1){
