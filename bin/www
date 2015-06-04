@@ -190,138 +190,118 @@ function ChatApp(){
 
 }
 
-function ChatServidorSocketIO(servidorPrincipal, chatapp){
-    var self= this;
+// function ChatServidorSocketIO(servidorPrincipal, chatapp){
+//     var self= this;
 
-    self.servidor= require("socket.io")(servidorPrincipal);
-    self.socketListeners;
-    self.chatapp= chatapp;
+//     self.servidor= require("socket.io")(servidorPrincipal);
+//     self.socketListeners;
+//     self.chatapp= chatapp;
 
-    self.setListeners= function(listeners){
-        self.socketListeners= listeners;
-    }
-    self.iniciar= function(){
+//     self.setListeners= function(listeners){
+//         self.socketListeners= listeners;
+//     }
+//     self.iniciar= function(){
 
-        this.servidor.on("connection", function(socket) { 
-             console.log("Nuevo socket conectado");
-
-               socket.on("conectar", function( datosUsuario ){
-                
-                    console.log(datosUsuario.nickname + " desea conectarse")
-                    socket.nickname= datosUsuario.nickname;
-                    chatapp.usuariosConectados[socket.nickname].socket =socket;
-                    //var mac=  chatapp.usuariosConectados[socket.nickname].mac;
-                   
-
-
-                    socket.emit("usuariosConectados", chatapp.GetInfoUsuariosConectados() );
-
-                    var NuevoUsuario=  
-                                  {
-                                    "nickname": socket.nickname,  
-                                    "fotoUrl": chatapp.usuariosConectados[socket.nickname].fotoUrl,
-                                  };
-
-                    socket.broadcast.emit("UsuarioJoined", NuevoUsuario );
-
-              });
-              socket.on("disconnect2", function(data){
-
-                   if(data.force){
-                       
-                        console.log(socket.nickname +" se ha desconectado");
-                        chatapp.eliminarUsuario(socket.nickname);
-                        socket.broadcast.emit("UsuarioLeft", socket.nickname );
-
-                        return;
-                   }
-                   
-              })
-              socket.on("disconnect", function(){
-
-                   if(! chatapp.usuariosConectados[socket.nickname] ){
-                      return;
-                   }
-                   //Inicio Intento de reconeccion
-                  
-                    chatapp.usuariosConectados[socket.nickname].reconTimer =  
-                    setTimeout( 
-                      function(){
-
-                          console.log(socket.nickname +" se ha desconectado");
-                          chatapp.eliminarUsuario(socket.nickname);
-                          socket.broadcast.emit("UsuarioLeft", socket.nickname );
-                      }
-                    ,100000);
-                        
-              })
-            
-
-              socket.on("nuevoMensajeA", function(data){
-
-                  var usuarioDestino= data.nickname;
-                  console.log(socket.nickname + " desea enviar un mensaje a  "+ usuarioDestino);
-
-                  var infoMensaje={
-                      "emisor": socket,
-                      "destinatario": usuarioDestino,
-                      "mensaje":data.mensaje,
-                  }   
-
-                  var DatosValidos= chatapp.verificarDatosDelMensaje(infoMensaje);
-
-                  if(DatosValidos){
-
-                    enviarMensajePrivado(infoMensaje);
-                    chatapp.registrarMensajePrivado(infoMensaje);
-                    
-                  }
-
-              })
-              IntentoReconeccion(socket, function(resultado,mac){
-                  if(resultado){
-
-                       console.log("Reconectando!!!!!!!");
-                        ReconectarUsuario(socket,mac);
-                  }
-              })  
-        });
-    }
+        
+//     }
     
-}
+// }
 
 
 
 chatapp= new ChatApp();
 
-var chatServer= new ChatServidorSocketIO(server, chatapp);
-
-var chatListeners= function(chatapp,socket){
+//var chatServer= new ChatServidorSocketIO(server, chatapp);
 
 
-};
-function getDataFrom(options, fn){
+var io = require("socket.io")(server);
+
+io.on("connection", function(socket) { 
+
+     console.log("Nuevo socket conectado");
+
+     socket.on("conectar", function( datosUsuario ){
+      
+          console.log(datosUsuario.nickname + " desea conectarse")
+          socket.nickname= datosUsuario.nickname;
+          chatapp.usuariosConectados[socket.nickname].socket =socket;
+          //var mac=  chatapp.usuariosConectados[socket.nickname].mac;
+         
 
 
-    callback = function(response) {
-      var str = '';
+          socket.emit("usuariosConectados", chatapp.GetInfoUsuariosConectados() );
 
-      response.on('data', function (chunk) {
-        str += chunk;
-      });
+          var NuevoUsuario=  
+                        {
+                          "nickname": socket.nickname,  
+                          "fotoUrl": chatapp.usuariosConectados[socket.nickname].fotoUrl,
+                        };
 
-      response.on('end', function () {
+          socket.broadcast.emit("UsuarioJoined", NuevoUsuario );
 
-          var json= JSON.parse(str);
+    });
+    socket.on("disconnect2", function(data){
 
-          fn(json);
-      });
-    }
+         if(data.force){
+             
+              console.log(socket.nickname +" se ha desconectado");
+              chatapp.eliminarUsuario(socket.nickname);
+              socket.broadcast.emit("UsuarioLeft", socket.nickname );
+
+              return;
+         }
+         
+    })
+    socket.on("disconnect", function(){
+
+         if(! chatapp.usuariosConectados[socket.nickname] ){
+            return;
+         }
+         //Inicio Intento de reconeccion
+        
+          chatapp.usuariosConectados[socket.nickname].reconTimer =  
+          setTimeout( 
+            function(){
+
+                console.log(socket.nickname +" se ha desconectado");
+                chatapp.eliminarUsuario(socket.nickname);
+                socket.broadcast.emit("UsuarioLeft", socket.nickname );
+            }
+          ,100000);
+              
+    })
   
-      http.request(options, callback).end();
 
+    socket.on("nuevoMensajeA", function(data){
 
-}
+        var usuarioDestino= data.nickname;
+        console.log(socket.nickname + " desea enviar un mensaje a  "+ usuarioDestino);
+
+        var infoMensaje={
+            "emisor": socket,
+            "destinatario": usuarioDestino,
+            "mensaje":data.mensaje,
+        }   
+
+        var DatosValidos= chatapp.verificarDatosDelMensaje(infoMensaje);
+
+        if(DatosValidos){
+
+          enviarMensajePrivado(infoMensaje);
+          chatapp.registrarMensajePrivado(infoMensaje);
+          
+        }
+
+    })
+    IntentoReconeccion(socket, function(resultado,mac){
+        if(resultado){
+
+             console.log("Reconectando!!!!!!!");
+              ReconectarUsuario(socket,mac);
+        }
+    })  
+});
+
 function enviarMensajePrivado(infoMsj){
 
   var usuarioDestino= infoMsj.destinatario;
@@ -379,16 +359,3 @@ function IntentoReconeccion(socket, fn){
    });
 
 }
-
-//chatServer.setListeners(chatListeners);
-
-chatServer.iniciar();
-
-// var a = require("socket.io")(server);
-
-// a.on("connection", function(socket){
-
-//     console.log("Haala madrid");
-
-// });
-
