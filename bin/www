@@ -1,0 +1,385 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('chatapp:server');
+var http = require('http');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+macServer     = require('getmac');
+macClient= require('node-arp');
+
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+function getMac(ip,callback){
+  if(ip!="::1" && ip != "127.0.0.1" && ip != "localhost" ){
+    macClient.getMAC(ip,function(err,mac){
+      if(!err){
+        callback(mac);
+      }
+    })
+  }else{
+
+    macServer.getMac(function(err,mac){
+      if (err)  throw err;
+      if(mac)
+        callback(mac);
+      
+    })
+  }
+}
+
+function ChatApp(){
+
+    var self= this;
+    self.usuariosConectados= {};
+    self.MacUsuario= {};
+    self.conversacionesPrivadas={};
+    
+    
+    self.verificarUsuarioDisponible= function(datosUsuario){
+
+        console.log("Verificando nuevo usuario con datos, nick: " 
+            + datosUsuario.nickname + ", mac: "+ datosUsuario.mac );
+
+        var disponible= self.usuariosConectados[ datosUsuario.nickname ] == null 
+        && datosUsuario.nickname!="";
+
+        return disponible;
+    }
+    self.verificarDatosDelMensaje= function(infoMsj){
+
+        var valido= self.usuariosConectados[infoMsj.emisor.nickname]!=null &&  
+          self.usuariosConectados[infoMsj.destinatario] !=null;
+
+        if(!self.usuariosConectados[infoMsj.emisor.nickname] ){
+           console.log("No estas conectado"); 
+          
+        }
+        if(!self.usuariosConectados[infoMsj.destinatario] ){
+           console.log("El usuario destino no esta conectado"); 
+          
+        }
+
+        return valido;
+
+    }
+    self.GetInfoUsuariosConectados= function(){
+
+        var usuarios= Array();
+
+        for(var key in self.usuariosConectados){
+            usuarios.push(  {"nickname": key,  "fotoUrl": self.usuariosConectados[key]["fotoUrl"] } );
+        }
+        return usuarios;
+    }
+    self.agregarUsuario= function(datosUsuario){
+
+          self.usuariosConectados[ datosUsuario.nickname ]= datosUsuario;
+          self.MacUsuario[datosUsuario.mac]= datosUsuario.nickname;
+    }
+    self.eliminarUsuario= function(nickname){
+        if( self.usuariosConectados[nickname] ){
+
+          var mac= self.usuariosConectados[nickname].mac;
+          delete  self.MacUsuario[mac];
+          delete  self.usuariosConectados[nickname];
+          
+        }
+    }
+    self.registrarMensajePrivado= function(infoMsj){
+
+        var emisor= infoMsj.emisor, usuarioDestino= infoMsj.destinatario;
+        var TieneRegistroConversacionConUsuario= 
+        self.conversacionesPrivadas[emisor.nickname+"/"+usuarioDestino]  != null;
+
+        if(!TieneRegistroConversacionConUsuario){
+
+             self.conversacionesPrivadas[emisor.nickname+"/"+usuarioDestino]= {
+                  "mensajes": Array(),
+             }
+
+        }
+        var mensajesPrivados= self.conversacionesPrivadas[emisor.nickname+"/"+usuarioDestino].mensajes;
+        mensajesPrivados.push(infoMsj.mensaje);
+
+    }
+    
+
+}
+
+function ChatServidorSocketIO(servidorPrincipal, chatapp){
+    var self= this;
+    self.servidor= require("socket.io")(servidorPrincipal);
+    self.socketListeners;
+    self.chatapp= chatapp;
+
+    self.setListeners= function(listeners){
+        self.socketListeners= listeners;
+    }
+    self.iniciar= function(){
+
+        this.servidor.on("connection", function(socket) { 
+            self.socketListeners(chatapp,socket) 
+        });
+    }
+    
+}
+
+
+
+chatapp= new ChatApp();
+
+var chatServer= new ChatServidorSocketIO(server, chatapp);
+
+var chatListeners= function(chatapp,socket){
+     console.log("Nuevo socket conectado");
+
+      
+
+  
+     socket.on("conectar", function( datosUsuario ){
+          console.log(datosUsuario.nickname + " desea conectarse")
+          socket.nickname= datosUsuario.nickname;
+          chatapp.usuariosConectados[socket.nickname].socket =socket;
+          //var mac=  chatapp.usuariosConectados[socket.nickname].mac;
+         
+
+
+          socket.emit("usuariosConectados", chatapp.GetInfoUsuariosConectados() );
+
+          var NuevoUsuario=  
+                        {
+                          "nickname": socket.nickname,  
+                          "fotoUrl": chatapp.usuariosConectados[socket.nickname].fotoUrl,
+                        };
+
+          socket.broadcast.emit("UsuarioJoined", NuevoUsuario );
+
+    });
+    socket.on("disconnect2", function(data){
+
+         if(data.force){
+             
+              console.log(socket.nickname +" se ha desconectado");
+              chatapp.eliminarUsuario(socket.nickname);
+              socket.broadcast.emit("UsuarioLeft", socket.nickname );
+
+              return;
+         }
+         
+    })
+    socket.on("disconnect", function(){
+
+         if(! chatapp.usuariosConectados[socket.nickname] ){
+            return;
+         }
+         //Inicio Intento de reconeccion
+        
+          chatapp.usuariosConectados[socket.nickname].reconTimer =  
+          setTimeout( 
+            function(){
+
+                console.log(socket.nickname +" se ha desconectado");
+                chatapp.eliminarUsuario(socket.nickname);
+                socket.broadcast.emit("UsuarioLeft", socket.nickname );
+            }
+          ,100000);
+              
+    })
+  
+
+    socket.on("nuevoMensajeA", function(data){
+
+        var usuarioDestino= data.nickname;
+        console.log(socket.nickname + " desea enviar un mensaje a  "+ usuarioDestino);
+
+        var infoMensaje={
+            "emisor": socket,
+            "destinatario": usuarioDestino,
+            "mensaje":data.mensaje,
+        }   
+
+        var DatosValidos= chatapp.verificarDatosDelMensaje(infoMensaje);
+
+        if(DatosValidos){
+
+          enviarMensajePrivado(infoMensaje);
+          chatapp.registrarMensajePrivado(infoMensaje);
+          
+        }
+
+    })
+    IntentoReconeccion(socket, function(resultado,mac){
+        if(resultado){
+
+             console.log("Reconectando!!!!!!!");
+              ReconectarUsuario(socket,mac);
+        }
+    })  
+
+};
+function getDataFrom(options, fn){
+
+
+    callback = function(response) {
+      var str = '';
+
+      response.on('data', function (chunk) {
+        str += chunk;
+      });
+
+      response.on('end', function () {
+
+          var json= JSON.parse(str);
+
+          fn(json);
+      });
+    }
+  
+      http.request(options, callback).end();
+
+
+}
+function enviarMensajePrivado(infoMsj){
+
+  var usuarioDestino= infoMsj.destinatario;
+  var emisor= infoMsj.emisor;
+
+  var TargetSocketId=  chatapp.usuariosConectados[usuarioDestino].socket.id;
+
+  console.log("Enviando mensaje privado");
+
+  emisor.to(TargetSocketId).emit("NuevoMensajeDe", 
+      {
+          "nickname": emisor.nickname, 
+          "mensaje": infoMsj.mensaje
+      }
+  );
+ 
+
+}
+function ReconectarUsuario(socket,mac){
+
+    var oldnickname= oldnickname;
+    if(chatapp.usuariosConectados[  oldnickname ] ){
+      
+      clearTimeout( chatapp.usuariosConectados[  oldnickname ].reconTimer );
+    }
+    delete chatapp.usuariosConectados[  oldnickname ].reconTimer;
+    chatapp.usuariosConectados[  oldnickname ].socket= socket;
+    socket.nickname= oldnickname;
+
+}
+
+
+function IntentoReconeccion(socket, fn){
+
+    IP= socket.conn.remoteAddress;
+    if( IP.indexOf("::ffff:")> -1){
+        IP=IP.replace("::ffff:","");
+    }
+    getMac(IP, function(mac){
+
+        if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ]   ){
+
+            if( chatapp.usuariosConectados[  chatapp.MacUsuario[mac] ].reconTimer ){
+
+                 fn(true,mac);
+                 return;
+            }
+        }
+        fn(false,mac);
+        
+       
+   });
+
+}
+
+chatServer.setListeners(chatListeners);
+
+chatServer.iniciar();
+
+

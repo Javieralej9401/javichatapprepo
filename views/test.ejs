@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Salas de Chat</title>
+</head>
+		  
+	    <script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
+	    <script type="text/javascript" src='javascripts/livequery.js'></script>
+
+
+
+		<script src="/socket.io/socket.io.js"></script>
+
+
+<script>
+
+ var socket = io();
+
+
+$(document).ready(function(){
+
+	num=  window.location.search.replace("?","");
+	var nombre="nombre"+num;
+
+		
+		socket.on("tellme", function(){
+			socket.emit("Iam", nombre);
+		})
+	 
+})
+
+    
+</script>
+
+
+<body style="background-color: #F3F3F5">
+
+	Hola a todos
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Salas de Chat</title>
+</head>
+		 <meta name="viewport" content="width=device-width, initial-scale=1"> 
+
+	    <script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
+	    <script type="text/javascript" src="javascripts/handlebars-v3.0.3.js"></script>
+	    <script type="text/javascript" src="javascripts/underscore-min.js"></script>
+	    <script type="text/javascript" src="javascripts/backbone-min.js"></script>
+
+
+		<link rel="stylesheet" type="text/css" href="">
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/bootstrap/css/bootstrap.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/font-awesome-4.3.0/css/font-awesome.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/ionicons-2.0.1/css/ionicons.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/AdminLTE.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/skins/skin-blue.min.css'>
+
+		
+
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="javascripts/modelos.js"></script>
+		<script src="javascripts/vistas.js"></script>
+		<script src="javascripts/chatAppController.js"></script>
+
+<script>
+
+
+var socket = io();
+
+onload=function(){ 
+    setInterval(function(){if(window.parar)return;document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight},30); 
+} 
+  //Inicio 
+	
+$(document).ready(function(){
+
+	sessionStorage.removeItem("mensajesPrivados");
+		
+	var nick;
+	var fotoUrl;
+	var UsuarioLogeado;
+
+	var bPreguntar = true;
+     
+    window.onbeforeunload = desconectar;
+     
+    function desconectar(){
+
+      	socket.emit("disconnect2", {"force":true});
+    }
+
+	
+	<% if (typeof  datosUsuario != "undefined" ){ %>
+			 nick= "<%= datosUsuario.nickname %>";
+			 fotoUrl= "<%= datosUsuario.fotoUrl %> ";
+			 UsuarioLogeado= new Usuario( 
+					{
+						nickname: nick, 
+						fotoUrl: fotoUrl,
+					}
+			 );
+	<% } %>
+				
+			 	
+		
+	
+	
+ 	var ChatEventos= function(chatapp){
+
+	  chatapp.socket.on("usuariosConectados", function(usuarios){
+
+	  		var usuariosOnline= _.map(usuarios, function(usuario){
+	  			return new Usuario({nickname: usuario.nickname} );
+	  		})
+	  		chatapp.usuariosConectados.reset(usuariosOnline);
+
+	  });
+	  chatapp.socket.on("UsuarioJoined", function(usuario){
+
+	  		chatapp.usuariosConectados.add( new Usuario( {nickname: usuario.nickname} ) );
+	  });
+	  chatapp.socket.on("UsuarioLeft", function(nickname){
+	  		
+        var u = chatapp.usuariosConectados.find(function(item) { return item.get('nickname') == nickname });
+        if (u) {
+            chatapp.usuariosConectados.remove(u);
+        }
+
+	  })
+	  chatapp.socket.on("NuevoMensajeDe", function(data){
+
+	  		var usuarioActivoEnVentanaPriv=  $(".direct-chat").attr("data-usuario-activo");
+
+	  		var TieneVentanaActivaConUsuario=  (usuarioActivoEnVentanaPriv == data.nickname);
+	  		
+	  		if(TieneVentanaActivaConUsuario){
+
+	  	 		$(".direct-chat-messages").renderTemplate($('#mensajeSecond'), { nick: data.nickname, msj: data.mensaje }, 1);
+	  		}else{
+
+	  			 $(".users-list").find("[ nick-item-list = '"+data.nickname+"']").addClass("nuevoMsjAlerta");
+	  			
+	  		}
+	  		GuardarMsjEnSesion(data);
+	  
+	  })
+
+	}
+	
+	var ChatAplication= new ChatApp( {usuarioLogeado: UsuarioLogeado, socket:socket, eventos: ChatEventos });
+
+
+	ChatAplication.iniciar();
+	 
+	 
+	
+})
+function debug(data){
+	console.log("*************************")
+	console.log(data);
+	console.log("*************************")
+}
+
+
+function GuardarMsjEnSesion(data){
+
+
+	 var mensajesPSession= sessionStorage.getItem("mensajesPrivados")
+
+	 if(! mensajesPSession ){
+
+ 		var ArrMensajesPrivados= {};
+ 		var JsonString= JSON.stringify(ArrMensajesPrivados);
+
+ 		sessionStorage.setItem("mensajesPrivados", JsonString );
+
+	 }
+
+	 var mensajesPv= JSON.parse(sessionStorage.getItem("mensajesPrivados"))
+	 var usuario= data.nickname;
+
+	 if(!mensajesPv[usuario]){
+
+	 	 mensajesPv[usuario]={"mensajes": Array() };
+	 	 var JsonString= JSON.stringify(mensajesPv);
+ 		 sessionStorage.setItem("mensajesPrivados", JsonString );
+	 }
+
+
+	 var msjsave= { "mensaje": data.mensaje };
+	 if(data.me){
+
+	 	msjsave["nickname"]= data.me;
+	 }else{
+
+	 	msjsave["nickname"]= usuario;
+	 }
+	 var cantMensajesEnSesion= mensajesPv[usuario].mensajes.length;
+	 if( cantMensajesEnSesion >  100){
+	 	 //se obtiene la mitad de los mensajes para evitar desborde de memoria de la sesion;
+	 	 mensajesPv[usuario].mensajes = mensajesPv[usuario].mensajes.slice(cantMensajesEnSesion/2 ,cantMensajesEnSesion   );
+	 	
+	 }
+	 
+	 mensajesPv[usuario].mensajes.push(msjsave );
+	 var JsonStringBack= JSON.stringify(mensajesPv);
+	 sessionStorage.setItem("mensajesPrivados", JsonStringBack);
+
+
+
+}
+    
+
+</script>
+
+
+<body style="background-color: #F3F3F5">
+
+<style>
+	.users-list > li {
+		width: 100%;
+		cursor:pointer;
+	}
+	.users-list > li:hover {
+		background-color: #F4F4F4;
+	}
+
+	.users-list > li > img {
+		float: left;
+	}
+	.nuevoMsjAlerta{
+		background-color: lightblue;
+	}
+	
+</style>
+
+	
+
+<script id="usuarioListProto" type="text/x-handlebars-template">  
+	  <div class="userItem row " nick-item-list="{{nick}}">
+		<div class="col-md-3" style="padding: 0;">
+  				<img class="img-circle" style="width:60%" src="stylesheets/Admin/dist/img/user1-128x128.jpg" alt="User Image">
+		</div>
+		<div class="col-md-9" style="padding: 0; text-align:left">
+			 <a class="users-list-name" href="#"> {{nick}}  </a>
+				      <span class="users-list-date">Today</span>
+		</div>
+	   </div>
+	    
+	     
+</script>  
+
+<script id="mensajeSecond" type="text/x-handlebars-template">  
+  
+    <div class="direct-chat-msg">
+      <div class="direct-chat-info clearfix">
+        <span class="direct-chat-name pull-left"> {{nick}}  </span>
+        <span class="direct-chat-timestamp pull-right">23 Jan 2:00 pm</span>
+      </div>
+      <img class="direct-chat-img" src="stylesheets/Admin/dist/img/user1-128x128.jpg" alt="message user image">
+      <div class="direct-chat-text" style="float: left; margin-left: 10px;   max-width: 320px; word-wrap: break-word;">
+	        {{msj}}
+      </div>
+    </div>
+
+
+</script>  
+
+<script id="mensajePrinci" type="text/x-handlebars-template">  
+  
+    <div class="direct-chat-msg right">
+	      <div class="direct-chat-info clearfix">
+	        <span class="direct-chat-name pull-right">{{nick}} </span>
+	        <span class="direct-chat-timestamp pull-left">23 Jan 2:05 pm</span>
+	      </div>
+	      <img class="direct-chat-img" src="stylesheets/Admin/dist/img/user1-128x128.jpg" alt="message user image">
+	      <div class="direct-chat-text" style="float: right; margin-right: 10px; max-width: 320px; word-wrap: break-word">
+	       
+	        {{msj}}
+	      </div>
+	</div>
+	
+
+</script>  
+
+
+
+<div id="usuariosOnlineContainer" class="row" style="padding:40px; height: auto; min-height: 100%;">
+	
+	<div class="col-md-4" style="padding:0">
+			<div  class="box box-primary"  style="display:block;  height: 349px;">
+			    <div class="box-header with-border">
+			      <h3 class="box-title">Usuarios conectados</h3>
+			      <div class="box-tools pull-right">
+			        <span class="cantusuariosCon label label-primary"></span>
+			       
+			      </div>
+			    </div><!-- /.box-header -->
+			    <div class="box-body no-padding">
+			      <ul class="users-list clearfix">
+
+
+
+
+			      </ul><!-- /.users-list -->
+			    </div><!-- /.box-body -->
+			    <!-- <div class="box-footer text-center">
+			      <a href="javascript::" class="uppercase">View All Users</a>
+			    </div> -->
+			</div>
+		
+	</div>
+	<div class="col-md-8" style="padding:0">
+
+				<div  class="box box-primary direct-chat direct-chat-primary" style="display:block"   >
+				<div class="box-header with-border">
+				  <h3 class="box-title">  <span class="NickConvPrivate"> </span> </h3>
+				  <div class="box-tools pull-right">
+				  <!--   <span data-toggle="tooltip" title="" class="badge bg-light-blue" data-original-title="3 New Messages">3</span> -->
+				  
+				    <button class="btn btn-box-tool" data-toggle="tooltip" title="" data-widget="chat-pane-toggle" data-original-title="Contacts"><i class="fa fa-comments"></i></button>
+				  
+				  </div>
+				</div>
+				<div class="box-body">
+				 
+				  <div id="chat" style="min-height: 283px;" onmouseover="parar=1" onmouseout="parar=0" class="direct-chat-messages">
+				   		<center>
+							<br>
+							<br>
+				   			<div class="panel panel-default">
+
+				   				<div class="panel-body">
+				   				 
+							   		<h1 >Bienvenido a<span style="color:#3C8DBC; font-weight:bold"> JaviChat App <i style="font-size:40px" class="fa fa-comment"></i> </span></h1>
+										
+									<h4>Selecciona un usuario en el panel de usuarios, para empezar una conversación</h4>
+
+				   				</div>
+				   			</div>
+
+				   		</center>
+				  
+				  </div>
+					 
+					  <div class="direct-chat-contacts">
+					    <ul class="contacts-list">
+					      <li>
+					        <a href="#">
+					          <img class="contacts-list-img" src="stylesheets/Admin/dist/img/user1-128x128.jpg">
+					          <div class="contacts-list-info">
+					            <span class="contacts-list-name">
+					              Count Dracula
+					              <small class="contacts-list-date pull-right">2/28/2015</small>
+					            </span>
+					            <span class="contacts-list-msg">How have you been? I was...</span>
+					          </div>
+					        </a>
+					      </li>                  
+					    </ul>
+					  </div>
+				</div>
+					<div class="box-footer">
+					  <form action="#" method="post">
+					    <div style="display:none" class="inputMsjW hiddenc input-group">
+					      <input type="text"  name="message" placeholder="Type Message ..." class=" msjInput form-control">
+					      <span class="input-group-btn">
+					        <button type="button" class="enviarMsjBtn btn btn-primary btn-flat">Enviar</button>
+					      </span>
+					    </div>
+					  </form>
+					</div>
+			</div>
+
+	</div>
+</div>
+
+
+     <script type="text/javascript" src=  'stylesheets/Admin/bootstrap/js/bootstrap.min.js'></script>
+
+</body>
+</html>

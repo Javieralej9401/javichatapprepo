@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Javi ChatApp</title>
+
+     	<script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="">
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/bootstrap/css/bootstrap.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/font-awesome-4.3.0/css/font-awesome.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/ionicons-2.0.1/css/ionicons.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/AdminLTE.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/skins/skin-blue.min.css'>
+
+  </head>
+
+<script>
+
+  var socket = io();
+
+</script>
+ <body class="login-page">
+
+ 
+
+    <div class="login-box">
+      <div class="login-logo">
+        <a  href="/"><b>JaviChat</b> App <i style="font-size:40px" class="fa fa-comment"></i></a>
+      </div><!-- /.login-logo -->
+      <div class="login-box-body">
+        <p class="login-box-msg">Introduce un nickname para entrar</p>
+        <form action="/" method="post">
+          <div class="form-group has-feedback">
+            <input type="text" class="form-control" name="nickname" id="nickname" placeholder="Nickname"/>
+            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+          </div>
+          
+          <div class="row">
+
+            <div class="col-xs-4 pull-right">
+              <button type="submit" class="btn btn-primary btn-block btn-flat ">Entrar</button>
+            </div><!-- /.col -->
+          </div>
+          <% if (typeof  errores != "undefined"){ %>
+
+              <span style="color:red;">
+                <%= errores %>
+                  </span> 
+
+         <% } %>
+        </form>
+
+
+      </div><!-- /.login-box-body -->
+    </div><!-- /.login-box -->
+
+
+  </body>
+     
+</html>
