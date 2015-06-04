@@ -210,7 +210,7 @@ function ChatServidorSocketIO(servidorPrincipal, chatapp){
 
 
 
-//chatapp= new ChatApp();
+chatapp= new ChatApp();
 
 //var chatServer= new ChatServidorSocketIO(server, chatapp);
 
