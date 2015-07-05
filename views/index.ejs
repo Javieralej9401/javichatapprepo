@@ -3,12 +3,7 @@
 <head>
 	<title>Salas de Chat</title>
 </head>
-		 <meta name="viewport" content="width=device-width, initial-scale=1"> 
-
-	    <script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
-	    <script type="text/javascript" src="javascripts/handlebars-v3.0.3.js"></script>
-	    <script type="text/javascript" src="javascripts/underscore-min.js"></script>
-	    <script type="text/javascript" src="javascripts/backbone-min.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1"> 
 
 
 		<link rel="stylesheet" type="text/css" href="">
@@ -20,10 +15,10 @@
 
 		
 
+		<script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
+	   
 		<script src="/socket.io/socket.io.js"></script>
-		<script src="javascripts/modelos.js"></script>
-		<script src="javascripts/vistas.js"></script>
-		<script src="javascripts/chatAppController.js"></script>
+
 
 <script>
 
@@ -358,7 +353,7 @@ function GuardarMsjEnSesion(data){
 					<div class="box-footer">
 					  <form action="#" method="post">
 					    <div style="display:none" class="inputMsjW hiddenc input-group">
-					      <input type="text"  name="message" placeholder="Type Message ..." class=" msjInput form-control">
+					      <input type="text"  name="message" placeholder="Escribe ..." class=" msjInput form-control">
 					      <span class="input-group-btn">
 					        <button type="button" class="enviarMsjBtn btn btn-primary btn-flat">Enviar</button>
 					      </span>
@@ -373,6 +368,14 @@ function GuardarMsjEnSesion(data){
 			
 
 	</div>
+
+	
+		<script type="text/javascript" src="javascripts/handlebars-v3.0.3.js"></script>
+	    <script type="text/javascript" src="javascripts/underscore-min.js"></script>
+	    <script type="text/javascript" src="javascripts/backbone-min.js"></script>
+		<script src="javascripts/modelos.js"></script>
+		<script src="javascripts/vistas.js"></script>
+		<script src="javascripts/chatAppController.js"></script>
 
      <script type="text/javascript" src=  'stylesheets/Admin/bootstrap/js/bootstrap.min.js'></script>
 
