@@ -81,6 +81,11 @@ var UsuariosConectadosVista= Backbone.View.extend({
     var inputMsj =   $(this.el).find(".msjInput");
     var inputMsjW =  $(this.el).find(".inputMsjW");
 
+    $(".users-list ").find(".chattingMark").fadeOut("fast");
+    $(ev.currentTarget)
+                 .find(".chattingMark").fadeIn();
+    
+
     if(inputMsjW.hasClass("hiddenc")){
 
        inputMsjW.removeClass("hiddenc");
