@@ -224,7 +224,7 @@ io.on("connection", function(socket) {
       
           console.log(datosUsuario.nickname + " desea conectarse")
           socket.nickname= datosUsuario.nickname;
-          chatapp.usuariosConectados[socket.nickname].socket =socket;
+          chatapp.usuariosConectados[socket.nickname].socket = socket;
           //var mac=  chatapp.usuariosConectados[socket.nickname].mac;
          
 

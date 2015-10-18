@@ -5,186 +5,11 @@
 </head>
 		<meta name="viewport" content="width=device-width, initial-scale=1"> 
 
-
-		<link rel="stylesheet" type="text/css" href="">
         <link rel="stylesheet" type="text/css" href='stylesheets/Admin/bootstrap/css/bootstrap.min.css'>
         <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/AdminLTE.min.css'>
         <link rel="stylesheet" type="text/css" href='stylesheets/Admin/dist/css/skins/skin-blue.min.css'>
 
-		
-
-		<script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
-	   
-		<script src="/socket.io/socket.io.js"></script>
-
-
-<script>
-
-
-var socket = io();
-
-onload=function(){ 
-    setInterval(function(){if(window.parar)return;document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight},30); 
-} 
-  //Inicio 
 	
-$(document).ready(function(){
-
-	sessionStorage.removeItem("mensajesPrivados");
-		
-	var nick;
-	var fotoUrl;
-	var UsuarioLogeado;
-
-	var bPreguntar = true;
-     
-    window.onbeforeunload = desconectar;
-     
-    function desconectar(){
-
-      	socket.emit("disconnect2", {"force":true});
-    }
-
-	
-	<% if (typeof  datosUsuario != "undefined" ){ %>
-			 nick= "<%= datosUsuario.nickname %>";
-			 fotoUrl= "<%= datosUsuario.fotoUrl %> ";
-			 UsuarioLogeado= new Usuario( 
-					{
-						nickname: nick, 
-						fotoUrl: fotoUrl,
-					}
-			 );
-	<% } %>
-				
-			 	
-		
-	
-	
- 	var ChatEventos= function(chatapp){
-
-	  chatapp.socket.on("usuariosConectados", function(usuarios){
-
-	  		var usuariosOnline= _.map(usuarios, function(usuario){
-	  			return new Usuario({nickname: usuario.nickname} );
-	  		})
-	  		chatapp.usuariosConectados.reset(usuariosOnline);
-
-	  });
-	  chatapp.socket.on("UsuarioJoined", function(usuario){
-
-	  		chatapp.usuariosConectados.add( new Usuario( {nickname: usuario.nickname} ) );
-	  		var msj=  usuario.nickname + " ha entrado!"
-	  		notificar(msj);
-	  });
-	  chatapp.socket.on("UsuarioLeft", function(nickname){
-	  
-        var u = chatapp.usuariosConectados.find(function(item) { return item.get('nickname') == nickname });
-        if (u) {
-            chatapp.usuariosConectados.remove(u);
-        }
-        var msj= nickname + " ha salido!"
-	  	notificar(msj);
-
-	  })
-	  chatapp.socket.on("NuevoMensajeDe", function(data){
-
-	  		var usuarioActivoEnVentanaPriv=  $(".direct-chat").attr("data-usuario-activo");
-
-	  		var TieneVentanaActivaConUsuario=  (usuarioActivoEnVentanaPriv == data.nickname);
-	  		
-	  		if(TieneVentanaActivaConUsuario){
-
-	  	 		$(".direct-chat-messages").renderTemplate($('#mensajeSecond'), { nick: data.nickname, msj: data.mensaje }, 1);
-	  		}else{
-	  			var msj= data.nickname + " te ha enviado un mensaje!"
-	  			notificar(msj);
-	  			
-
-	  			 $(".users-list").find("[ nick-item-list = '"+data.nickname+"']").addClass("nuevoMsjAlerta");
-	  			
-	  		}
-	  		GuardarMsjEnSesion(data);
-	  
-	  })
-
-	}
-	
-	var ChatAplication= new ChatApp( {usuarioLogeado: UsuarioLogeado, socket:socket, eventos: ChatEventos });
-
-
-	ChatAplication.iniciar();
-	 
-	 
-	
-})
-function notificar(msj){
-
-	$(".notificaciones").renderTemplate($('#notiAlert'), { msj: msj }, 1);
-	setTimeout(function(){
-			$(".notificaciones").empty();
-	},4000);
-
-}
-function debug(data){
-	console.log("*************************")
-	console.log(data);
-	console.log("*************************")
-}
-
-
-function GuardarMsjEnSesion(data){
-
-
-	 var mensajesPSession= sessionStorage.getItem("mensajesPrivados")
-
-	 if(! mensajesPSession ){
-
- 		var ArrMensajesPrivados= {};
- 		var JsonString= JSON.stringify(ArrMensajesPrivados);
-
- 		sessionStorage.setItem("mensajesPrivados", JsonString );
-
-	 }
-
-	 var mensajesPv= JSON.parse(sessionStorage.getItem("mensajesPrivados"))
-	 var usuario= data.nickname;
-
-	 if(!mensajesPv[usuario]){
-
-	 	 mensajesPv[usuario]={"mensajes": Array() };
-	 	 var JsonString= JSON.stringify(mensajesPv);
- 		 sessionStorage.setItem("mensajesPrivados", JsonString );
-	 }
-
-
-	 var msjsave= { "mensaje": data.mensaje };
-	 if(data.me){
-
-	 	msjsave["nickname"]= data.me;
-	 }else{
-
-	 	msjsave["nickname"]= usuario;
-	 }
-	 var cantMensajesEnSesion= mensajesPv[usuario].mensajes.length;
-	 if( cantMensajesEnSesion >  100){
-	 	 //se obtiene la mitad de los mensajes para evitar desborde de memoria de la sesion;
-	 	 mensajesPv[usuario].mensajes = mensajesPv[usuario].mensajes.slice(cantMensajesEnSesion/2 ,cantMensajesEnSesion   );
-	 	
-	 }
-	 
-	 mensajesPv[usuario].mensajes.push(msjsave );
-	 var JsonStringBack= JSON.stringify(mensajesPv);
-	 sessionStorage.setItem("mensajesPrivados", JsonStringBack);
-
-
-
-}
-    
-
-</script>
-
-
 <body style="background-color: #F3F3F5">
 
 <style>
@@ -207,7 +32,8 @@ function GuardarMsjEnSesion(data){
 
 	
 
-<script id="usuarioListProto" type="text/x-handlebars-template">  
+<script id="usuarioListProto" type="text/x-handlebars-template">
+  
 	  <div class="userItem row " nick-item-list="{{nick}}">
 		<div class="col-md-3" style="padding: 0;">
   				<img class="img-circle" style="width:60%" src="stylesheets/Admin/dist/img/user1-128x128.jpg" alt="User Image">
@@ -365,21 +191,231 @@ function GuardarMsjEnSesion(data){
 
 	</div>
 </div>
-	<div class="notificaciones" style="position:fixed; bottom: 4px; width: 400px; right: 28px;">
-			
+<div class="notificaciones" style="position:fixed; bottom: 4px; width: 400px; right: 28px;">
+		
 
-	</div>
+</div>
 
-		 <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/font-awesome-4.3.0/css/font-awesome.min.css'>
-        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/ionicons-2.0.1/css/ionicons.min.css'>
-		<script type="text/javascript" src="javascripts/handlebars-v3.0.3.js"></script>
+		
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
 	    <script type="text/javascript" src="javascripts/underscore-min.js"></script>
 	    <script type="text/javascript" src="javascripts/backbone-min.js"></script>
-		<script src="javascripts/modelos.js"></script>
 		<script src="javascripts/vistas.js"></script>
-		<script src="javascripts/chatAppController.js"></script>
+		
+		 <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/font-awesome-4.3.0/css/font-awesome.min.css'>
+        <link rel="stylesheet" type="text/css" href='stylesheets/Admin/plugins/ionicons-2.0.1/css/ionicons.min.css'>
 
-     <script type="text/javascript" src=  'stylesheets/Admin/bootstrap/js/bootstrap.min.js'></script>
+        <script type="text/javascript" src="javascripts/handlebars-v3.0.3.js"></script>
+        <script type="text/javascript" src=  'stylesheets/Admin/bootstrap/js/bootstrap.min.js'></script>
+
 
 </body>
+
+
+<script>
+
+
+$(document).ready(function(){
+
+	sessionStorage.removeItem("mensajesPrivados");
+	
+    
+    var Usuario = Backbone.Model.extend({
+
+	  	defaults: {
+	        nickname: null,
+	        fotoUrl: null,
+	        conversaciones: {}, //json de nicks
+	    },
+	});
+
+	var UsuariosConectados= Backbone.Collection.extend({
+			model:Usuario,
+	})
+
+
+	var ChatApplication = (function(){
+
+		var Socket =  io();
+		var UsuarioLogeado;
+
+		var usuariosConectados=  new UsuariosConectados();
+		var usuariosConectadosVista;
+		var chatAPI = {
+
+			enviarMensaje : function(data){
+
+				Socket.emit("nuevoMensajeA", 
+	        		data
+		 		);
+			},
+
+			guardarMsjEnSesion : function(data){
+
+				 var mensajesPSession= sessionStorage.getItem("mensajesPrivados")
+
+				 if(! mensajesPSession ){
+
+			 		var ArrMensajesPrivados= {};
+			 		var JsonString= JSON.stringify(ArrMensajesPrivados);
+
+			 		sessionStorage.setItem("mensajesPrivados", JsonString );
+
+				 }
+
+				 var mensajesPv= JSON.parse(sessionStorage.getItem("mensajesPrivados"))
+				 var usuario= data.nickname;
+
+				 if(!mensajesPv[usuario]){
+
+				 	 mensajesPv[usuario]={"mensajes": Array() };
+				 	 var JsonString= JSON.stringify(mensajesPv);
+			 		 sessionStorage.setItem("mensajesPrivados", JsonString );
+				 }
+
+
+				 var msjsave= { "mensaje": data.mensaje };
+				 if(data.me){
+
+				 	msjsave["nickname"]= data.me;
+				 }else{
+
+				 	msjsave["nickname"]= usuario;
+				 }
+				 var cantMensajesEnSesion= mensajesPv[usuario].mensajes.length;
+				 if( cantMensajesEnSesion >  100){
+				 	 //se obtiene la mitad de los mensajes para evitar desborde de memoria de la sesion;
+				 	 mensajesPv[usuario].mensajes = mensajesPv[usuario].mensajes.slice(cantMensajesEnSesion/2 ,cantMensajesEnSesion   );
+				 	
+				 }
+				 
+				 mensajesPv[usuario].mensajes.push(msjsave );
+				 var JsonStringBack= JSON.stringify(mensajesPv);
+				 sessionStorage.setItem("mensajesPrivados", JsonStringBack);
+
+			},
+			
+
+		};
+
+		var InicializarUsuarioLogeado =  function InicializarUsuarioLogeado(){
+
+			var nick;
+			var fotoUrl;
+		
+			<% if (typeof  datosUsuario != "undefined" ){ %>
+					 nick= "<%= datosUsuario.nickname %>";
+					 fotoUrl= "<%= datosUsuario.fotoUrl %> ";
+					 UsuarioLogeado= new Usuario( 
+							{
+								nickname: nick, 
+								fotoUrl: fotoUrl,
+							}
+					 );
+			<% } %>
+
+			usuariosConectadosVista = new UsuariosConectadosVista({model: usuariosConectados , usuarioLogeado: UsuarioLogeado, chatAPI: chatAPI } );
+
+		}
+	
+		var IniciarEventos = function IniciarEventos(){
+
+		  	window.onbeforeunload = desconectar;
+     		function desconectar(){
+				alert("Entro")
+				Socket.emit("disconnect2", {"force":true});
+			}
+		 
+		  	onload= function(){ 
+			    setInterval(function(){
+			    	if(window.parar)return;document.getElementById('chat').scrollTop=document.getElementById('chat').scrollHeight
+			    },30); 
+			} 	
+	
+			  Socket.on("usuariosConectados", function(usuarios){
+
+			  		var usuariosOnline= _.map(usuarios, function(usuario){
+			  			return new Usuario({nickname: usuario.nickname} );
+			  		})
+			  		usuariosConectados.reset(usuariosOnline);
+
+			  });
+			  Socket.on("UsuarioJoined", function(usuario){
+
+			  		usuariosConectados.add( new Usuario( {nickname: usuario.nickname} ) );
+			  		var msj=  usuario.nickname + " ha entrado!"
+			  		notificar(msj);
+			  });
+			  Socket.on("UsuarioLeft", function(nickname){
+			  
+			        var u = usuariosConectados.find(function(item) { return item.get('nickname') == nickname });
+			        if (u) {
+			            usuariosConectados.remove(u);
+			        }
+			        var msj= nickname + " ha salido!"
+				  	notificar(msj);
+
+			  })
+			  Socket.on("NuevoMensajeDe", function(data){
+
+			  		var usuarioActivoEnVentanaPriv=  $(".direct-chat")
+			  										 .attr("data-usuario-activo");
+
+			  		var TieneVentanaActivaConUsuario=  (usuarioActivoEnVentanaPriv == data.nickname);
+			  		
+			  		if(TieneVentanaActivaConUsuario){
+
+			  	 		$(".direct-chat-messages").renderTemplate($('#mensajeSecond'), { nick: data.nickname, msj: data.mensaje }, 1);
+			  		}else{
+
+			  			var msj= data.nickname + " te ha enviado un mensaje!"
+			  			notificar(msj);
+
+			  			 $(".users-list").find("[ nick-item-list = '"+data.nickname+"']").addClass("nuevoMsjAlerta");
+			  			
+			  		}
+			  		chatAPI.guardarMsjEnSesion(data);
+				  
+			  })
+
+		}
+		var Iniciar =  function Iniciar(){
+
+			if(Socket && UsuarioLogeado){
+				alert("No es posible iniciar la aplicación.")
+				return;
+			}
+			InicializarUsuarioLogeado();
+			IniciarEventos();
+			
+			Socket.emit("conectar", { 
+				"nickname": UsuarioLogeado.get("nickname") 
+			});
+
+		}
+	
+		function notificar(msj){
+
+			$(".notificaciones").renderTemplate($('#notiAlert'), { msj: msj }, 1);
+			setTimeout(function(){
+					$(".notificaciones").empty();
+			},4000);
+
+		}
+
+		return {
+
+			Iniciar: Iniciar
+		}
+
+	}() );
+
+	ChatApplication.Iniciar();
+	 
+})
+
+
+</script>
 </html>

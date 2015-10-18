@@ -21,14 +21,15 @@ var UsuarioVista= Backbone.View.extend({
   	 	 $(this.el).renderTemplate($("#usuarioListProto"), {nick:  this.model.get("nickname")});
         $(this.el).find(".users-list-name").html(this.model.get("nickname") );
   	 }
-  })
+})
 var UsuariosConectadosVista= Backbone.View.extend({
 		 el: '#usuariosOnlineContainer',
 		 usuarioLogeado: null ,
+     chatAPI: null,
   	 initialize:function(params){
 
   	 	this.usuarioLogeado= params.usuarioLogeado;
-  	 	
+  	 	this.chatAPI= params.chatAPI;
   	 	this.render();
 	    this.listenTo(this.model, 'reset', this.render);
 	    this.listenTo(this.model, 'remove', this.render);
@@ -170,11 +171,12 @@ var UsuariosConectadosVista= Backbone.View.extend({
 	  	 							{ nick: "Tú" , msj: mensaje },
 	  	 							1
 	 							      );
-	 		socket.emit("nuevoMensajeA", {
-	 										"nickname": nicknameMsjTo, 
-	 										"mensaje": mensaje  
-	 									  } 
-	 					);
+	 		
+      var datosMensaje =   {
+            "nickname": nicknameMsjTo, 
+            "mensaje": mensaje  
+      } 
+      this.chatAPI.enviarMensaje(datosMensaje);
 
 
 	 		var data={
@@ -183,7 +185,7 @@ var UsuariosConectadosVista= Backbone.View.extend({
   	 				mensaje: mensaje 
   	 			 };
 
-  	 	GuardarMsjEnSesion(data);
+  	 	  this.chatAPI.guardarMsjEnSesion(data);
 
   	 }
 });
