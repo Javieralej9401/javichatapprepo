@@ -41,6 +41,7 @@ var UsuariosConectadosVista= Backbone.View.extend({
             "click .userItem ": "AbrirConversacion",
             "click .enviarMsjBtn ": "nuevoMensajeA",
             "keydown .msjInput":  "keydownF", 
+            "click .btnMostrarContactos": "mostrarContactos",
      },
   	 render: function(){
   	 	var usuariosCollection =this.model.models;
@@ -50,6 +51,11 @@ var UsuariosConectadosVista= Backbone.View.extend({
   	 		$(this.el).find(".cantusuariosCon")
   	 				  .html(usuariosCollection.length +" usuarios")
   	 		var listaUsuarios= $(this.el).find(".users-list");
+        var listaUsuarios2 =  $(".contacts-list")
+
+        listaUsuarios2.empty();
+
+        var fragment =  document.createDocumentFragment();
 
 	  	 	this.model.each(function(m,indice) {
 	  	 		
@@ -60,14 +66,22 @@ var UsuariosConectadosVista= Backbone.View.extend({
                 usuarioVista= new UsuarioVista({model:m} );
 
             //}
-	  	 			listaUsuarios.append(usuarioVista.el);
+            fragment.appendChild(usuarioVista.el);
+
 	  	 	},this);
+
+        listaUsuarios.append(fragment);
+      
+
 
   	 	}
 
   	 		return this;
          
   	 },
+     mostrarContactos: function(){
+
+     },
   	 AbrirConversacion: function(ev){
   	
   	 	var targetNickname=  $(ev.currentTarget)

@@ -35,10 +35,10 @@
 <script id="usuarioListProto" type="text/x-handlebars-template">
   
 	  <div class="userItem row " nick-item-list="{{nick}}">
-		<div class="col-md-3" style="padding: 0;">
+		<div class="col-md-3 col-xs-3" style="padding: 0;">
   				<img class="img-circle" style="width:60%" src="stylesheets/Admin/dist/img/user1-128x128.jpg" alt="User Image">
 		</div>
-		<div class="col-md-9" style="padding: 0; text-align:left">
+		<div class="col-md-9 col-xs-9" style="padding: 0; text-align:left">
 			 <a class="users-list-name" href="#"> {{nick}}  </a>
 				      <span class="users-list-date">Today</span>
 				      <span class="chattingMark fa fa-comment pull-right" style="font-size: 20px; margin-right: 12px; padding: 0px; display:none"></span>
@@ -99,12 +99,34 @@
 
 </script>  
 
+<style>
+	@media only screen and (max-device-width: 480px) {
+		body{
 
+			  font-size: 14px;
+		}
+	  
+	}
+	#usuariosOnlineContainer{
+		display: flex;
+		flex-flow: row wrap;
+
+	}
+	.usuariosContainer{
+
+		flex: 1 0 25%;
+		
+	}
+	.chatContainer{
+
+		flex: 1 0 75%;
+	}
+</style>
 
 <div id="usuariosOnlineContainer" class="row" style="padding:40px; height: auto; min-height: 100%;">
 	
-	<div class="col-md-3" style="padding:0">
-			<div  class="box box-primary"  style="display:block;  min-height: 349px;">
+	<div class="usuariosContainer " style="padding:0">
+			<div  class="box box-primary"  style="display:block; ">
 			    <div class="box-header with-border">
 			      <h3 class="box-title">Usuarios conectados</h3>
 			      <div class="box-tools pull-right">
@@ -118,65 +140,61 @@
 
 
 
-			      </ul><!-- /.users-list -->
-			    </div><!-- /.box-body -->
-			    <!-- <div class="box-footer text-center">
-			      <a href="javascript::" class="uppercase">View All Users</a>
-			    </div> -->
+			      </ul>
+			    </div>
 			</div>
 		
 	</div>
 
-	<div class="col-md-9" style="padding:0; padding-left:4px">
+	<div class="chatContainer " style="padding:0; padding-left:4px">
 
-				<div  class="box box-primary direct-chat direct-chat-primary" style="display:block"   >
-				<div class="box-header with-border">
-				  <h3 class="box-title">  <span class="NickConvPrivate"> </span> </h3>
-				  <div class="box-tools pull-right">
-				  <!--   <span data-toggle="tooltip" title="" class="badge bg-light-blue" data-original-title="3 New Messages">3</span> -->
-				  
-				    <button class="btn btn-box-tool" data-toggle="tooltip" title="" data-widget="chat-pane-toggle" data-original-title="Contacts"><i class="fa fa-comments"></i></button>
-				  
-				  </div>
-				</div>
-				<div class="box-body">
-				 
-				  <div id="chat" style="min-height: 283px;" onmouseover="parar=1" onmouseout="parar=0" class="direct-chat-messages">
-				   		<center>
-							<br>
-							<br>
-				   			<div class="panel panel-default">
-
-				   				<div class="panel-body">
-				   				 
-							   		<h1 >Bienvenido a<span style="color:#3C8DBC; font-weight:bold"> JaviChat App <i style="font-size:40px" class="fa fa-comment"></i> </span></h1>
-										
-									<h4>Selecciona un usuario en el panel de usuarios, para empezar una conversación</h4>
-
-				   				</div>
-				   			</div>
-
-				   		</center>
-				  
-				  </div>
+			<div  class="box box-primary direct-chat direct-chat-primary" style="display:block"   >
+					<div class="box-header with-border">
+					  	  <h3 class="box-title">  <span class="NickConvPrivate"> </span> </h3>
+						  <div class="box-tools pull-right">
+						  
+						    <button class="btn btn-box-tool btnMostrarContactos" data-toggle="tooltip" title="" data-widget="chat-pane-toggle" data-original-title="Contacts"><i class="fa fa-comments "></i></button>
+						  
+						  </div>
+					</div>
+					<div class="box-body">
 					 
-					  <div class="direct-chat-contacts">
-					    <ul class="contacts-list">
-					      <li>
-					        <a href="#">
-					          <img class="contacts-list-img" src="stylesheets/Admin/dist/img/user1-128x128.jpg">
-					          <div class="contacts-list-info">
-					            <span class="contacts-list-name">
-					              Count Dracula
-					              <small class="contacts-list-date pull-right">2/28/2015</small>
-					            </span>
-					            <span class="contacts-list-msg">How have you been? I was...</span>
-					          </div>
-					        </a>
-					      </li>                  
-					    </ul>
+					  <div id="chat" style="min-height: 283px;" onmouseover="parar=1" onmouseout="parar=0" class="direct-chat-messages">
+					   		<center>
+								<br>
+								<br>
+					   			<div class="panel panel-default">
+
+					   				<div class="panel-body">
+					   				 
+								   		<h1 >Bienvenido a<span style="color:#3C8DBC; font-weight:bold"> JaviChat App <i style="font-size:40px" class="fa fa-comment"></i> </span></h1>
+											
+										<h4>Selecciona un usuario en el panel de usuarios, para empezar una conversación</h4>
+
+					   				</div>
+					   			</div>
+
+					   		</center>
+					  
 					  </div>
-				</div>
+					 	<div class="direct-chat-contacts" >
+		                    <ul class="contacts-list">
+		                      <li>
+		                        <a href="#">
+		                          <img class="contacts-list-img" src="../dist/img/user1-128x128.jpg">
+		                          <div class="contacts-list-info">
+		                            <span class="contacts-list-name">
+		                              Count Dracula
+		                              <small class="contacts-list-date pull-right">2/28/2015</small>
+		                            </span>
+		                            <span class="contacts-list-msg">How have you been? I was...</span>
+		                          </div><!-- /.contacts-list-info -->
+		                        </a>
+		                      </li>                      
+		                    </ul>
+		                  </div>
+					 
+					</div>
 					<div class="box-footer">
 					  <form action="#" method="post">
 					    <div style="display:none" class="inputMsjW hiddenc input-group">
